@@ -112,7 +112,7 @@
  #### Политика Безопасности
 
 #### Реализованная политика безопасности в коде
- ''' python
+ '''python
  import base64
 
 VERIFIER_SEAL = "verifier_seal"
@@ -253,4 +253,4 @@ def check_payload_seal(payload):
             return True
     except Exception as e:
         print(f'[error] seal check error: {e}')
-    return False '''
+    return False  '''
