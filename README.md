@@ -82,24 +82,23 @@
  ![](./images/1chema-1.png)
  |Домен безопасности | Уровень доверия|Оценка сложности и размера домена| Обоснование
 |--------|----------|-----------------------|-------------|
-| Коммуникационная инфраструктура| Недоверенный|MM|Передаёт команды и данные, может быть скомпрометирован, ЦБ защищается ПЛК |
-| АСУ ТЭЦ|Доверенный|CL|Центр логики и контроля; проверяет входящие сигналы, повышая доверие.|
+| Коммуникационная инфраструктура(связь)| Недоверенный|MM|Передаёт команды и данные, может быть скомпрометирован, ЦБ защищается ПЛК |
+| Система рапознавания запросов(АСУ)|Доверенный|CL|Центр логики и контроля; проверяет входящие сигналы, повышая доверие.|
 | ПЛК| 	Доверенный|SS| Собственная разработка, известная архитектура, ограниченный функционал, физически защищён
 | Система диагностики |Доверенный, повышающая целостность |MM| Выполняет контроль, сложно подделать, не влияет напрямую на управление|
 |Оборудование|Недоверенный |SS | Могут быть неисправности, но ответственность за достоверность лежит на ПЛК.
-|Инженер по автоматизации|Доверенный, повышающая целостность |MS|	Использует специализированные инструменты, но возможны ошибки конфигурации
 |Прикладная программа (ПП)|Недоверенный|MM |	Получена извне, изменяема, нет механизмов контроля подлинности
 |Лицензия на режимы ПП|Доверенный|SS |Простая реализация, проверяет режимы, но пока без криптографической верификации
 |Оператор АРМ|Недоверенный|MM |	Управляется человеком, возможны ошибки или саботаж
-|Наблюдатель|Недоверенный|SS|	Только читает данные, не проверяется на подлинность, возможна подмена
+|Мониторинг|Недоверенный|SS|	Только читает данные, не проверяется на подлинность, возможна подмена
 
 
  #### Версия 2
  ![](./images/2chema-1.png)
  |Домен безопасности | Уровень доверия|Оценка сложности и размера домена| Обоснование
 |--------|----------|-----------------------|-------------|
-| Коммуникационная инфраструктура| Недоверенный|MM|Передаёт команды и данные, может быть скомпрометирован, ЦБ защищается ПЛК |
-| АСУ ТЭЦ|Доверенный|CL|Центр логики и контроля; проверяет входящие сигналы, повышая доверие.|
+| Коммуникационная инфраструктура (связь)| Недоверенный|MM|Передаёт команды и данные, может быть скомпрометирован, ЦБ защищается ПЛК |
+| Система рапознавания запросов(АСУ)|Доверенный|CL|Центр логики и контроля; проверяет входящие сигналы, повышая доверие.|
 | ПЛК| 	Доверенный|SS| Собственная разработка, известная архитектура, ограниченный функционал, физически защищён
 | Система диагностики |Доверенный, повышающая целостность |MM| Выполняет контроль, сложно подделать, не влияет напрямую на управление|
 |Оборудование|Недоверенный |SS | Могут быть неисправности, но ответственность за достоверность лежит на ПЛК.
@@ -113,146 +112,145 @@
  #### Политика Безопасности
 
 #### Реализованная политика безопасности в коде
-    import base64
+ ''' python
+ import base64
 
-    VERIFIER_SEAL = "verifier_seal"
-    LICENSE_SIGNATURE = "license_signature"
-
-
-    def check_operation(id, details):
-        authorized = False
-
-        src = details["source"]
-        dst = details["destination"]
-        operation = details["operation"]
-
-        if dst == 'comm_infra':
-            authorized = True
-
-        if src == 'comm_infra' and dst == 'message_broker':
-            authorized = True
-
-        if src == 'comm_infra' and dst == 'asu_teс':
-            authorized = True
-        if src == 'comm_infra' and dst == 'operator_arm':
-            authorized = True
-        if src == 'operator_arm' and dst == 'message_broker' : 
-            authorized = True 
-        if src == 'message_broker' and dst == 'operator_arm' : 
-            authorized = True 
-        if src == 'message_broker' and dst == 'asu_teс' \
-                and operation == 'control_command_from_operator':
-            authorized = True  
-        if src == 'asu_teс' and dst == 'message_broker' : 
-            authorized = True
-        if src == 'operator_arm' and dst == 'asu_teс':
-            authorized = True
-        if src == 'asu_teс' and dst == 'plc' \
-                and operation == 'validated_command_from_asu':
-            authorized = True
-        if src == 'plc' and dst == 'pmessage_broker' :
-            authorized = True
-        if src == 'message_broker' and dst == 'plc' :
-            authorized = True
-      
-        if src == 'plc' and dst == 'equipment' \
-                and operation == 'execute_command':
-            authorized = True
-
-        if src == 'equipment' and dst == 'message_broker': 
-            authorized = True
-        if src == 'message_broker' and dst == 'equipment': 
-            authorized = True
-
-        if src == 'equipmen' and dst == 'plc' \
-                and operation == 'equipment_status_update':
-            authorized = True
-
-        if src == 'plc' and dst == 'asu_teс' \
-                and operation == 'status_to_asu':
-            authorized = True
-        if src == 'asu_teс' and dst == 'operator_arm' \
-                and operation == 'status_display':
-            authorized = True
-        if src == 'plc' and dst == 'diagnostic_system' \
-                and operation == 'plc_diagnostic_data':
-            authorized = True
-
-        if src == 'diagnostic_system' and dst == 'message_broker' : 
-            authorized = True
-
-        if src == 'message_broker' and dst == 'diagnostic_system' : 
-            authorized = True
-
-        if src == 'diagnostic_system' and dst == 'asu_teс' \
-                and operation == 'diagnostic_to_asu':
-            authorized = True
-        if src == 'asu_teс' and dst == 'automation_engineer' \
-                and operation == 'asu_to_engineer_update':
-            authorized = True
-
-        if src == 'automation_engineer' and dst == 'message_broker' : 
-            authorized = True
-
-        if src == 'message_broker' and dst == 'automation_engineer' : 
-            authorized = True
-        if src == 'app_program' and dst == 'license_for_mode' \
-                and operation == 'request_license_validation':
-            authorized = True
-
-        if src == '	verification_system' and dst == 'app_program' \
-                and operation == 'verification_result':
-            authorized = True
-        if src == 'message_broker' and dst == 'verification_system' \
-                and operation == 'verify_app_update':
-            authorized = True 
-        if src == 'verification_system' and dst == 'message_broker' : 
-            authorized = True
-
-        if src == '	verification_system' and dst == 'diagnostic_system' \
-                and operation == 'verification_status_to_diagnostics':
-            authorized = True
-        if src == '	verification_system' and dst == 'license_for_mode' \
-                and operation == 'license_check_request':
-            authorized = True
-
-        if src == 'message_broker' and dst == 'license_for_mode' \
-                and operation == 'verify_license_for_mode':
-            authorized = True
-
-        if src == 'license_for_mode' and dst == 'app_program' \
-                and operation == 'license_confirmed':
-            authorized = True
-
-        if src == 'license_for_mode' and dst == 'message_broker' : 
-            authorized = True
-
-        if src == 'message_broker' and dst == 'license_for_mode' : 
-            authorized = True
-
-        if src == 'license_for_mode' and dst == 'diagnostic_system' \
-                and operation == 'license_status_to_diagnostics':
-            authorized = True
-
-        if src == 'message_broker' and dst == 'security_monitor' \
-                and operation == 'collect_security_data':
-            authorized = True
-
-        if src == 'security_monitor' and dst == 'message_broker' \
-                and operation == 'report_security_status':
-            authorized = True
-        
-
-        return authorized
+VERIFIER_SEAL = "verifier_seal"
+LICENSE_SIGNATURE = "license_signature"
 
 
+def check_operation(id, details):
+    authorized = False
 
-    def check_payload_seal(payload):
-        try:
-            p = base64.b64decode(payload).decode()
-            if p.endswith(VERIFIER_SEAL) or p.endswith(LICENSE_SIGNATURE):
-                print('[info] payload seal is valid')
-                return True
-        except Exception as e:
-            print(f'[error] seal check error: {e}')
-        return False
+    src = details["source"]
+    dst = details["destination"]
+    operation = details["operation"]
+
+    if dst == 'comm_infra':
+        authorized = True
+
+    if src == 'comm_infra' and dst == 'message_broker':
+        authorized = True
+
+    if src == 'comm_infra' and dst == 'asu_teс':
+        authorized = True
+    if src == 'comm_infra' and dst == 'operator_arm':
+        authorized = True
+    if src == 'operator_arm' and dst == 'message_broker': 
+        authorized = True 
+    if src == 'message_broker' and dst == 'operator_arm': 
+        authorized = True 
+    if src == 'message_broker' and dst == 'asu_teс' \
+            and operation == 'control_command_from_operator':
+        authorized = True  
+    if src == 'asu_teс' and dst == 'message_broker': 
+        authorized = True
+    if src == 'operator_arm' and dst == 'asu_teс':
+        authorized = True
+    if src == 'asu_teс' and dst == 'plc' \
+            and operation == 'validated_command_from_asu':
+        authorized = True
+    if src == 'plc' and dst == 'message_broker':
+        authorized = True
+    if src == 'message_broker' and dst == 'plc':
+        authorized = True
+  
+    if src == 'plc' and dst == 'equipment' \
+            and operation == 'execute_command':
+        authorized = True
+
+    if src == 'equipment' and dst == 'message_broker': 
+        authorized = True
+    if src == 'message_broker' and dst == 'equipment': 
+        authorized = True
+
+    if src == 'equipment' and dst == 'plc' \
+            and operation == 'equipment_status_update':
+        authorized = True
+
+    if src == 'plc' and dst == 'asu_teс' \
+            and operation == 'status_to_asu':
+        authorized = True
+    if src == 'asu_teс' and dst == 'operator_arm' \
+            and operation == 'status_display':
+        authorized = True
+    if src == 'plc' and dst == 'diagnostic_system' \
+            and operation == 'plc_diagnostic_data':
+        authorized = True
+
+    if src == 'diagnostic_system' and dst == 'message_broker': 
+        authorized = True
+
+    if src == 'message_broker' and dst == 'diagnostic_system': 
+        authorized = True
+
+    if src == 'diagnostic_system' and dst == 'asu_teс' \
+            and operation == 'diagnostic_to_asu':
+        authorized = True
+    if src == 'asu_teс' and dst == 'automation_engineer' \
+            and operation == 'asu_to_engineer_update':
+        authorized = True
+
+    if src == 'automation_engineer' and dst == 'message_broker': 
+        authorized = True
+
+    if src == 'message_broker' and dst == 'automation_engineer': 
+        authorized = True
+    if src == 'app_program' and dst == 'license_for_mode' \
+            and operation == 'request_license_validation':
+        authorized = True
+
+    if src == 'verification_system' and dst == 'app_program' \
+            and operation == 'verification_result':
+        authorized = True
+    if src == 'message_broker' and dst == 'verification_system' \
+            and operation == 'verify_app_update':
+        authorized = True 
+    if src == 'verification_system' and dst == 'message_broker': 
+        authorized = True
+
+    if src == 'verification_system' and dst == 'diagnostic_system' \
+            and operation == 'verification_status_to_diagnostics':
+        authorized = True
+    if src == 'verification_system' and dst == 'license_for_mode' \
+            and operation == 'license_check_request':
+        authorized = True
+
+    if src == 'message_broker' and dst == 'license_for_mode' \
+            and operation == 'verify_license_for_mode':
+        authorized = True
+
+    if src == 'license_for_mode' and dst == 'app_program' \
+            and operation == 'license_confirmed':
+        authorized = True
+
+    if src == 'license_for_mode' and dst == 'message_broker': 
+        authorized = True
+
+    if src == 'message_broker' and dst == 'license_for_mode': 
+        authorized = True
+
+    if src == 'license_for_mode' and dst == 'diagnostic_system' \
+            and operation == 'license_status_to_diagnostics':
+        authorized = True
+
+    if src == 'message_broker' and dst == 'security_monitor' \
+            and operation == 'collect_security_data':
+        authorized = True
+
+    if src == 'security_monitor' and dst == 'message_broker' \
+            and operation == 'report_security_status':
+        authorized = True
+    
+    return authorized
+
+
+def check_payload_seal(payload):
+    try:
+        p = base64.b64decode(payload).decode()
+        if p.endswith(VERIFIER_SEAL) or p.endswith(LICENSE_SIGNATURE):
+            print('[info] payload seal is valid')
+            return True
+    except Exception as e:
+        print(f'[error] seal check error: {e}')
+    return False '''
